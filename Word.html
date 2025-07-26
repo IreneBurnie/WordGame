@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orchestra Instruments Word Search</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a192f 0%, #172a45 100%);
+            color: #f5f7fa;
+            min-height: 100vh;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Lato', sans-serif;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px 0;
+            position: relative;
+        }
+        
+        header::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #d4af37, transparent);
+        }
+        
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.2rem;
+            margin-bottom: 15px;
+            color: #ffffff;
+            letter-spacing: 1px;
+            font-weight: 700;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.25rem;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+            color: #a3b1cc;
+            font-weight: 300;
+        }
+        
+        .game-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+        }
+        
+        .grid-section {
+            flex: 1;
+            min-width: 350px;
+            max-width: 550px;
+            background: rgba(10, 25, 47, 0.7);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            backdrop-filter: blur(5px);
+        }
+        
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            color: #ffffff;
+            text-align: center;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .section-title::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 2px;
+            background: #d4af37;
+        }
+        
+        .instructions {
+            background: rgba(20, 40, 70, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 1.05rem;
+            line-height: 1.7;
+            border-left: 4px solid #d4af37;
+        }
+        
+        .instructions h3 {
+            color: #d4af37;
+            margin-bottom: 12px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+        }
+        
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(15, 1fr);
+            gap: 3px;
+            background: rgba(20, 40, 70, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 0 auto;
+        }
+        
+        .grid-cell {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(30, 50, 90, 0.5);
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            color: #e6e9f0;
+            border: 1px solid rgba(100, 130, 180, 0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .grid-cell:hover {
+            background: rgba(60, 90, 140, 0.4);
+            transform: scale(1.05);
+        }
+        
+        .grid-cell.selected {
+            background: #d4af37;
+            color: #0a192f;
+            transform: scale(1.1);
+            border-color: #b08c2a;
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
+        }
+        
+        .grid-cell.found {
+            background: rgba(30, 130, 76, 0.7);
+            color: white;
+            animation: pulse 0.6s;
+            border-color: #1d8a4d;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .word-list-section {
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+            background: rgba(10, 25, 47, 0.7);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            backdrop-filter: blur(5px);
+        }
+        
+        .word-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+        }
+        
+        .word-item {
+            padding: 14px 10px;
+            background: rgba(20, 40, 70, 0.5);
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            color: #e6e9f0;
+            border: 1px solid rgba(100, 130, 180, 0.2);
+            font-size: 1.05rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .word-item:hover {
+            background: rgba(40, 70, 120, 0.4);
+            transform: translateY(-3px);
+        }
+        
+        .word-item.found {
+            background: rgba(30, 130, 76, 0.4);
+            color: #a3e8bb;
+            text-decoration: none;
+            border-color: #1d8a4d;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #d4af37 0%, #b08c2a 100%);
+            color: #0a192f;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(180, 150, 50, 0.3);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.8px;
+            min-width: 160px;
+        }
+        
+        button::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: 0.5s;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(180, 150, 50, 0.5);
+        }
+        
+        button:hover::before {
+            left: 100%;
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            padding: 20px 15px;
+            background: rgba(20, 40, 70, 0.5);
+            border-radius: 10px;
+            font-weight: 600;
+            border: 1px solid rgba(100, 130, 180, 0.2);
+        }
+        
+        .stat-box {
+            text-align: center;
+            padding: 0 15px;
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            color: #d4af37;
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 5px;
+        }
+        
+        .instrument-categories {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin: 30px 0 40px;
+            flex-wrap: wrap;
+        }
+        
+        .category {
+            text-align: center;
+            padding: 20px;
+            background: rgba(20, 40, 70, 0.5);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            min-width: 180px;
+            border: 1px solid rgba(100, 130, 180, 0.2);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .category:hover {
+            transform: translateY(-5px);
+            background: rgba(30, 60, 110, 0.5);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .category-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            color: #d4af37;
+            margin-bottom: 15px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .category-title::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 2px;
+            background: #d4af37;
+        }
+        
+        .category-items {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: #c0c8db;
+        }
+        
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #8a9bb8;
+            font-size: 1.05rem;
+            padding: 20px;
+            max-width: 900px;
+            width: 100%;
+            line-height: 1.7;
+            border-top: 1px solid rgba(100, 130, 180, 0.2);
+        }
+        
+        @media (max-width: 900px) {
+            .game-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .grid-section, .word-list-section {
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .word-grid {
+                grid-template-columns: repeat(15, 22px);
+            }
+            
+            .grid-cell {
+                width: 22px;
+                height: 22px;
+                font-size: 14px;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .instrument-categories {
+                gap: 15px;
+            }
+            
+            .category {
+                min-width: 160px;
+                padding: 15px;
+            }
+            
+            .controls {
+                gap: 12px;
+            }
+            
+            button {
+                min-width: 140px;
+                padding: 12px 20px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .word-grid {
+                grid-template-columns: repeat(15, 18px);
+            }
+            
+            .grid-cell {
+                width: 18px;
+                height: 18px;
+                font-size: 12px;
+            }
+            
+            .word-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .instrument-categories {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .category {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Orchestra Instruments Word Search</h1>
+            <p class="subtitle">Discover the hidden orchestra instruments in this elegant word puzzle. A musical journey for the mind.</p>
+        </header>
+        
+        <div class="instrument-categories">
+            <div class="category">
+                <div class="category-title">Strings</div>
+                <div class="category-items">Violin<br>Viola<br>Cello<br>Bass<br>Harp</div>
+            </div>
+            <div class="category">
+                <div class="category-title">Woodwinds</div>
+                <div class="category-items">Flute<br>Oboe<br>Clarinet<br>Bassoon</div>
+            </div>
+            <div class="category">
+                <div class="category-title">Brass</div>
+                <div class="category-items">Trumpet<br>Trombone<br>Tuba<br>French Horn</div>
+            </div>
+            <div class="category">
+                <div class="category-title">Percussion</div>
+                <div class="category-items">Timpani<br>Xylophone<br>Piano</div>
+            </div>
+        </div>
+        
+        <div class="game-container">
+            <div class="grid-section">
+                <div class="instructions">
+                    <h3>How to Play</h3>
+                    <p>Find the orchestra instrument names hidden in the grid. Words can be found horizontally, vertically, or diagonally. Click and drag to select letters. Found words will be highlighted in green.</p>
+                </div>
+                <div class="word-grid" id="wordGrid"></div>
+            </div>
+            
+            <div class="word-list-section">
+                <div class="section-title">Instruments to Find</div>
+                <div class="word-list" id="wordList"></div>
+                
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-value" id="foundCount">0</div>
+                        <div>Found</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="totalCount">16</div>
+                        <div>Total</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="timer">0</div>
+                        <div>Seconds</div>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button id="checkBtn">Check Selection</button>
+                    <button id="resetBtn">Reset Game</button>
+                    <button id="solveBtn">Reveal Solution</button>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>We acknowledge the Traditional Owners and Custodians of the lands on which we work and pay our respects to Indigenous Elders past, present and emerging.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Orchestra instruments to find
+            const instruments = [
+                "VIOLIN", "VIOLA", "CELLO", "BASS", "HARP",
+                "FLUTE", "OBOE", "CLARINET", "BASSOON",
+                "TRUMPET", "TROMBONE", "TUBA", "FRENCHHORN",
+                "TIMPANI", "PIANO", "XYLOPHONE"
+            ];
+            
+            // Grid data
+            const gridSize = 15;
+            let grid = [];
+            let selectedCells = [];
+            let foundWords = [];
+            let startTime = Date.now();
+            let timerInterval;
+            
+            // DOM Elements
+            const wordGrid = document.getElementById('wordGrid');
+            const wordList = document.getElementById('wordList');
+            const foundCount = document.getElementById('foundCount');
+            const totalCount = document.getElementById('totalCount');
+            const timer = document.getElementById('timer');
+            const checkBtn = document.getElementById('checkBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const solveBtn = document.getElementById('solveBtn');
+            
+            // Initialize game
+            initGame();
+            
+            // Initialize the game
+            function initGame() {
+                // Reset game state
+                selectedCells = [];
+                foundWords = [];
+                foundCount.textContent = '0';
+                totalCount.textContent = instruments.length;
+                startTime = Date.now();
+                
+                // Clear timer if running
+                if (timerInterval) clearInterval(timerInterval);
+                
+                // Start timer
+                timerInterval = setInterval(updateTimer, 1000);
+                
+                // Generate grid
+                generateGrid();
+                
+                // Populate word list
+                populateWordList();
+                
+                // Render grid
+                renderGrid();
+            }
+            
+            // Generate the word search grid
+            function generateGrid() {
+                // Initialize empty grid
+                grid = Array(gridSize).fill().map(() => Array(gridSize).fill(''));
+                
+                // Place instruments in the grid
+                placeWords();
+                
+                // Fill remaining cells with random letters
+                fillEmptyCells();
+            }
+            
+            // Place words in the grid
+            function placeWords() {
+                const directions = [
+                    { x: 1, y: 0 },  // Horizontal
+                    { x: 0, y: 1 },  // Vertical
+                    { x: 1, y: 1 },  // Diagonal
+                    { x: 1, y: -1 }  // Anti-diagonal
+                ];
+                
+                instruments.forEach(word => {
+                    let placed = false;
+                    let attempts = 0;
+                    
+                    while (!placed && attempts < 100) {
+                        attempts++;
+                        
+                        // Choose random direction
+                        const dir = directions[Math.floor(Math.random() * directions.length)];
+                        
+                        // Choose random starting position
+                        const startX = Math.floor(Math.random() * (gridSize - (word.length * Math.abs(dir.x))));
+                        const startY = Math.floor(Math.random() * (gridSize - (word.length * Math.abs(dir.y))));
+                        
+                        // Adjust for anti-diagonal
+                        if (dir.y === -1) {
+                            if (startY < word.length - 1) continue;
+                        }
+                        
+                        // Check if we can place the word
+                        let canPlace = true;
+                        for (let i = 0; i < word.length; i++) {
+                            const x = startX + i * dir.x;
+                            const y = startY + i * dir.y;
+                            
+                            if (grid[x][y] !== '' && grid[x][y] !== word[i]) {
+                                canPlace = false;
+                                break;
+                            }
+                        }
+                        
+                        // Place the word
+                        if (canPlace) {
+                            for (let i = 0; i < word.length; i++) {
+                                const x = startX + i * dir.x;
+                                const y = startY + i * dir.y;
+                                grid[x][y] = word[i];
+                            }
+                            placed = true;
+                        }
+                    }
+                });
+            }
+            
+            // Fill empty cells with random letters
+            function fillEmptyCells() {
+                const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                for (let x = 0; x < gridSize; x++) {
+                    for (let y = 0; y < gridSize; y++) {
+                        if (grid[x][y] === '') {
+                            grid[x][y] = letters[Math.floor(Math.random() * letters.length)];
+                        }
+                    }
+                }
+            }
+            
+            // Render the grid
+            function renderGrid() {
+                wordGrid.innerHTML = '';
+                
+                for (let x = 0; x < gridSize; x++) {
+                    for (let y = 0; y < gridSize; y++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'grid-cell';
+                        cell.textContent = grid[x][y];
+                        cell.dataset.x = x;
+                        cell.dataset.y = y;
+                        
+                        // Add event listeners
+                        cell.addEventListener('mousedown', handleMouseDown);
+                        cell.addEventListener('mouseover', handleMouseOver);
+                        cell.addEventListener('mouseup', handleMouseUp);
+                        
+                        wordGrid.appendChild(cell);
+                    }
+                }
+            }
+            
+            // Populate the word list
+            function populateWordList() {
+                wordList.innerHTML = '';
+                
+                instruments.forEach(instrument => {
+                    const wordItem = document.createElement('div');
+                    wordItem.className = 'word-item';
+                    wordItem.textContent = instrument;
+                    wordItem.dataset.word = instrument;
+                    wordList.appendChild(wordItem);
+                });
+            }
+            
+            // Update timer display
+            function updateTimer() {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                timer.textContent = elapsed;
+            }
+            
+            // Mouse event handlers
+            let isMouseDown = false;
+            
+            function handleMouseDown(e) {
+                isMouseDown = true;
+                selectedCells = [getCellCoords(e.target)];
+                e.target.classList.add('selected');
+            }
+            
+            function handleMouseOver(e) {
+                if (!isMouseDown) return;
+                
+                const coords = getCellCoords(e.target);
+                
+                // Check if we're selecting in a straight line
+                if (selectedCells.length > 0) {
+                    const last = selectedCells[selectedCells.length - 1];
+                    const dx = coords.x - last.x;
+                    const dy = coords.y - last.y;
+                    
+                    // Only allow horizontal, vertical, or diagonal selection
+                    if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1 && (dx !== 0 || dy !== 0)) {
+                        // If direction changes, reset selection
+                        if (selectedCells.length > 1) {
+                            const prev = selectedCells[selectedCells.length - 2];
+                            const prevDx = last.x - prev.x;
+                            const prevDy = last.y - prev.y;
+                            
+                            if (dx !== prevDx || dy !== prevDy) {
+                                resetSelection();
+                                selectedCells = [last, coords];
+                                document.querySelector(`[data-x="${last.x}"][data-y="${last.y}"]`).classList.add('selected');
+                            }
+                        }
+                        
+                        selectedCells.push(coords);
+                        e.target.classList.add('selected');
+                    }
+                }
+            }
+            
+            function handleMouseUp() {
+                isMouseDown = false;
+                if (selectedCells.length > 1) {
+                    checkWord();
+                } else {
+                    resetSelection();
+                }
+            }
+            
+            // Get cell coordinates from DOM element
+            function getCellCoords(cell) {
+                return {
+                    x: parseInt(cell.dataset.x),
+                    y: parseInt(cell.dataset.y)
+                };
+            }
+            
+            // Reset cell selection
+            function resetSelection() {
+                document.querySelectorAll('.grid-cell.selected').forEach(cell => {
+                    cell.classList.remove('selected');
+                });
+                selectedCells = [];
+            }
+            
+            // Check the selected word
+            function checkWord() {
+                if (selectedCells.length < 3) {
+                    resetSelection();
+                    return;
+                }
+                
+                // Get the selected word
+                let word = '';
+                selectedCells.forEach(cell => {
+                    word += grid[cell.x][cell.y];
+                });
+                
+                // Check both directions
+                const reversedWord = word.split('').reverse().join('');
+                
+                let found = false;
+                let foundWord = '';
+                
+                // Check against instrument list
+                for (const instrument of instruments) {
+                    if (word === instrument || reversedWord === instrument) {
+                        found = true;
+                        foundWord = instrument;
+                        break;
+                    }
+                }
+                
+                if (found) {
+                    // Mark as found
+                    if (!foundWords.includes(foundWord)) {
+                        foundWords.push(foundWord);
+                        foundCount.textContent = foundWords.length;
+                        
+                        // Update word list
+                        document.querySelectorAll('.word-item').forEach(item => {
+                            if (item.dataset.word === foundWord) {
+                                item.classList.add('found');
+                            }
+                        });
+                        
+                        // Highlight cells
+                        selectedCells.forEach(cell => {
+                            const cellElem = document.querySelector(`[data-x="${cell.x}"][data-y="${cell.y}"]`);
+                            cellElem.classList.remove('selected');
+                            cellElem.classList.add('found');
+                        });
+                        
+                        // Check for win
+                        if (foundWords.length === instruments.length) {
+                            setTimeout(() => {
+                                const time = timer.textContent;
+                                clearInterval(timerInterval);
+                                alert(`Congratulations! You found all ${instruments.length} instruments in ${time} seconds!`);
+                            }, 500);
+                        }
+                    }
+                }
+                
+                resetSelection();
+            }
+            
+            // Solve the puzzle (show all words)
+            function solvePuzzle() {
+                instruments.forEach(instrument => {
+                    if (!foundWords.includes(instrument)) {
+                        foundWords.push(instrument);
+                        document.querySelectorAll('.word-item').forEach(item => {
+                            if (item.dataset.word === instrument) {
+                                item.classList.add('found');
+                            }
+                        });
+                    }
+                });
+                
+                foundCount.textContent = instruments.length;
+                
+                // Highlight all instrument letters in grid
+                document.querySelectorAll('.grid-cell').forEach(cell => {
+                    cell.classList.add('found');
+                });
+                
+                clearInterval(timerInterval);
+            }
+            
+            // Event listeners for buttons
+            checkBtn.addEventListener('click', checkWord);
+            resetBtn.addEventListener('click', initGame);
+            solveBtn.addEventListener('click', solvePuzzle);
+            
+            // Prevent text selection while dragging
+            document.addEventListener('selectstart', e => {
+                if (isMouseDown) e.preventDefault();
+            });
+        });
+    </script>
+</body>
+</html>
